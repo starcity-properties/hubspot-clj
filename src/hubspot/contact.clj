@@ -95,37 +95,53 @@
 ;; ==============================================================================
 
 
+(defn- params->properties [params]
+  (reduce (fn [acc [k v]] (conj acc {:property k :value v})) [] params))
+
+
 (defn create!
   "Create a new contact."
   ([email]
-   (create! email {}))
-  ([email opts]
+   (create! email {} {}))
+  ([email params]
+   (create! email params {}))
+  ([email params opts]
    (letfn [(-parse-params [params]
-             (-> (reduce (fn [acc [k v]] (conj acc {:property k :value v})) [] params)
+             (-> (params->properties params)
                  (tb/conj-when (when-some [e email] {:property "email" :value e}))))]
      (h/post-req "contacts/v1/contact"
-                 (assoc opts :params {:properties (-parse-params (:params opts))})))))
+                 (assoc-in opts [:params :properties] (-parse-params params))))))
 
 (s/fdef create!
-        :args (s/cat :email (hs/maybe ::email)
-                     :opts (s/? (h/opts? ::create-params)))
+        :args (s/alt :unary   (s/cat :email (s/nilable ::email))
+                     :binary  (s/cat :email (s/nilable ::email)
+                                     :params ::create-params)
+                     :ternary (s/cat :email (s/nilable ::email)
+                                     :params ::create-params
+                                     :opts h/request-options?))
         :ret (hs/async ::contact))
 
 
 (defn fetch
   "Fetch a contact by email or vid."
   ([id]
-   (fetch id {}))
-  ([id opts]
+   (fetch id {} {}))
+  ([id params]
+   (fetch id params {}))
+  ([id params opts]
    (if-not (s/valid? ::fetch-id id)
      (throw (ex-info "Invalid id!" {:id id}))
      (let [[id-name id-val] (s/conform ::fetch-id id)]
        (h/get-req (format "contacts/v1/contact/%s/%s/profile" (name id-name) id-val)
-                  opts)))))
+                  (assoc opts :params params))))))
 
 (s/fdef fetch
-        :args (s/cat :id ::fetch-id
-                     :opts (s/? (h/opts? ::fetch-params)))
+        :args (s/alt :unary   (s/cat :id ::fetch-id)
+                     :binary  (s/cat :id ::fetch-id
+                                     :params ::fetch-params)
+                     :ternary (s/cat :id ::fetch-id
+                                     :params ::fetch-params
+                                     :opts h/request-options?))
         :ret (hs/async ::contact))
 
 
@@ -134,20 +150,40 @@
   and property.
   https://developers.hubspot.com/docs/methods/contacts/search_contacts"
   ([query]
-   (search query {}))
-  ([query opts]
+   (search query {} {}))
+  ([query params]
+   (search query params {}))
+  ([query params opts]
    (h/get-req "/contacts/v1/search/query"
-              (update opts :params assoc :q query))))
+              (assoc opts :params (assoc params :q query)))))
 
 (s/fdef search
-        :args (s/cat :query ::query
-                     :opts (s/? (h/opts? ::search-params)))
+        :args (s/alt :unary   (s/cat :query ::query)
+                     :binary  (s/cat :query ::query
+                                     :params ::search-params)
+                     :ternary (s/cat :query ::query
+                                     :params ::search-params
+                                     :opts h/request-options?))
         :ret (hs/async ::search-res))
+
+
+(defn update!
+  ([id params]
+   (update! id params {}))
+  ([id params opts]
+   (h/post-req (format "contacts/v1/contact/vid/%s/profile" id)
+               (assoc-in opts [:params :properties] (params->properties params)))))
+
+(s/fdef update!
+        :args (s/cat :id ::fetch-id
+                     :params map?
+                     :opts (s/? h/request-options?))
+        :ret (hs/async nil?))
 
 
 
 (comment
-  (def api-key "ce0af81c-b158-4ac7-a770-57b65093b07c")
+  (def api-key "")
 
   (require '[clojure.spec.test.alpha :as stest])
 
@@ -156,8 +192,14 @@
   (create! "test@clojure.com" {:api-key api-key})
 
   (h/with-api-key api-key
-    (fetch 390001))
+    (fetch "test2@test.com"))
 
+
+  (h/with-api-key api-key
+    (update! "test@test.com" {:closedate (.getTime (java.util.Date.))}))
+
+
+  (.getTime (java.util.Date.))
 
 
   )
