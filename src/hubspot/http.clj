@@ -65,7 +65,13 @@
    (partial s/valid? ::opts))
   ([params-spec]
    (s/and (comp (partial s/valid? (s/or :empty empty? :params params-spec)) :params)
-          ::opts )))
+          ::opts)))
+
+
+(defn request-options?
+  "Is the argument a valid request options map?"
+  [x]
+  (s/valid? ::opts x))
 
 
 ;; ==============================================================================

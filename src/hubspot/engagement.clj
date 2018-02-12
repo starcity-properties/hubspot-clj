@@ -146,19 +146,26 @@
    (h/get-req (str "engagements/v1/engagements/" engagement-id) opts)))
 
 (s/fdef fetch
-        :args (s/cat :engagement-id ::id)
+        :args (s/cat :engagement-id ::id
+                     :opts (s/? h/request-options?))
         :ret (hs/async ::engagement))
 
 
 (defn fetch-all
   "Fetch all engagements, with optionally supplied `limit` and `offset`."
   ([]
-   (fetch-all {}))
-  ([opts]
-   (h/get-req "engagements/v1/engagements/paged" opts)))
+   (fetch-all {} {}))
+  ([params]
+   (fetch-all params {}))
+  ([params opts]
+   (h/get-req "engagements/v1/engagements/paged"
+              (assoc opts :params params))))
 
 (s/fdef fetch-all
-        :args (s/cat :opts (s/? (h/opts? ::fetch-all-params)))
+        :args (s/alt :nullary (s/cat)
+                     :unary (s/cat :params ::fetch-all-params)
+                     :binary (s/cat :params ::fetch-all-params
+                                    :opts h/request-options?))
         :ret (hs/async (s/keys :req-un [::results ::hasMore ::offset])))
 
 
@@ -171,7 +178,7 @@
 
 (s/fdef create!
         :args (s/cat :params ::create-params
-                     :opts (s/? (h/opts?)))
+                     :opts (s/? h/request-options?))
         :ret (hs/async ::engagement))
 
 
@@ -186,5 +193,5 @@
 (s/fdef update!
         :args (s/cat :engagement-id ::id
                      :params ::update-params
-                     :opts (s/? (h/opts?)))
+                     :opts (s/? h/request-options?))
         :ret (hs/async ::engagement))
