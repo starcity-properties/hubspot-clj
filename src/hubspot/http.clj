@@ -28,7 +28,7 @@
   string?)
 
 (s/def ::method
-  #{:get :post :delete :patch})
+  #{:get :post :put :delete :patch})
 
 (s/def ::endpoint
   string?)
@@ -120,7 +120,8 @@
   (get {:get    http/get
         :post   http/post
         :delete http/delete
-        :patch  http/patch} k))
+        :patch  http/patch
+        :put    http/put} k))
 
 
 (defn- encode-params
@@ -220,5 +221,6 @@
 
 (defapi post-req :post)
 (defapi patch-req :patch)
+(defapi put-req :put)
 (defapi get-req :get)
 (defapi delete-req :delete)
