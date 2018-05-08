@@ -1,6 +1,6 @@
 (ns hubspot.contact
-  (:require [hubspot.http :as h]
-            [clojure.spec.alpha :as s]
+  (:require [clojure.spec.alpha :as s]
+            [hubspot.http :as h]
             [hubspot.spec :as hs]
             [toolbelt.core :as tb]))
 
@@ -95,7 +95,8 @@
 ;; ==============================================================================
 
 
-(defn- params->properties [params]
+(defn- params->properties
+  [params]
   (reduce (fn [acc [k v]] (conj acc {:property k :value v})) [] params))
 
 
