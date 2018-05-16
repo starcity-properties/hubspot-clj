@@ -56,6 +56,15 @@
               (assoc opts :params params))))
 
 
+(defn fetch-by-contact
+  "Fetch a deal by its associated contact."
+  ([contact-id]
+   (fetch-by-contact contact-id {}))
+  ([contact-id opts]
+   (h/get-req (format "deals/v1/deal/associated/contact/%s/paged" contact-id)
+              opts)))
+
+
 (defn update!
   ([id params]
    (update! id params {}))
@@ -66,13 +75,3 @@
                  :properties (when-some [ps properties]
                                (params->properties properties)))]
      (h/put-req (format "deals/v1/deal/%s" id) (assoc opts :params params)))))
-
-
-(comment
-
-  (h/with-api-key ""
-    (update! 293488123 {:properties {:dealname             "Josh Lehman"
-                                     :dealstage            "qualifiedtobuy"
-                                     :application_activity "In-progress"}}))
-
-  )
