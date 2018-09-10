@@ -184,7 +184,7 @@
 
 (defn update-by-email!
   ([email params]
-   (update! email params {}))
+   (update-by-email! email params {}))
   ([email params opts]
    (h/post-req (format "contacts/v1/contact/email/%s/profile" email)
                (assoc-in opts [:params :properties] (params->properties params)))))
