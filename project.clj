@@ -1,4 +1,4 @@
-(defproject starcity/hubspot-clj "0.3.2"
+(defproject starcity/hubspot-clj "0.3.3-SNAPSHOT"
   :description "Clojure bindings to the Hubspot API."
   :url "https://github.com/starcity-properties/hubspot-clj"
   :license {:name "Eclipse Public License"
