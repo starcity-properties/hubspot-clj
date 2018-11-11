@@ -146,6 +146,31 @@
         :ret (hs/async ::contact))
 
 
+(defn fetch-or-create!
+  "Fetch a contact by `email`, if one exists. If a contact with that email does
+  not exist, create one."
+  ([email]
+   (fetch-or-create! email {} {}))
+  ([email params]
+   (fetch-or-create! email params {}))
+  ([email params opts]
+   (if-not (s/valid? ::email email)
+     (throw (ex-info "Invalid email!" {:email email}))
+     (let [possible-contact (fetch email {} (assoc opts :throw-on-error? false))]
+       (println "\n\n========  possible contact is" possible-contact)
+       (if (some? (:error possible-contact))
+         (create! email params opts)
+         possible-contact)))))
+
+(s/fdef fetch-or-create!
+        :args (s/alt :unary   (s/cat :email ::email)
+                     :binary  (s/cat :email ::email
+                                     :params ::create-params)
+                     :ternary (s/cat :email ::email
+                                     :params ::create-params
+                                     :opts h/request-options?)))
+
+
 (defn search
   "Search contacts given a `query` string. Can optionally provide count, offset
   and property.
