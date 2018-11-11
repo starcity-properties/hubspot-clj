@@ -157,7 +157,6 @@
    (if-not (s/valid? ::email email)
      (throw (ex-info "Invalid email!" {:email email}))
      (let [possible-contact (fetch email {} (assoc opts :throw-on-error? false))]
-       (println "\n\n========  possible contact is" possible-contact)
        (if (some? (:error possible-contact))
          (create! email params opts)
          possible-contact)))))
