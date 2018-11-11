@@ -31,6 +31,23 @@
   (s/keys :req-un [::properties ::vid ::profile-url]
           :opt-un [::identity-profiles ::form-submissions]))
 
+(s/def ::lists
+  (s/* map?))
+
+(s/def ::contact-list
+  (s/keys :req-un [::lists]))
+
+(s/def ::contact-lists
+  (s/+ ::contact-list))
+
+(s/def ::offset
+  integer?)
+
+(s/def ::count
+  integer?)
+
+(s/def ::fetch-params
+  (s/keys :opt-un [::offset ::count]))
 
 ;; ==============================================================================
 ;; HTTP API =====================================================================
@@ -58,3 +75,9 @@
    (fetch params {}))
   ([params opts]
    (h/get-req "contacts/v1/lists" (assoc opts :params params))))
+
+(s/fdef fetch
+        :args (s/alt :unary (s/cat :params ::fetch-params)
+                     :binary (s/cat :params ::fetch-params
+                                    :opts h/request-options?))
+        :ret (hs/async ::contact-lists))
